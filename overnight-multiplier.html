@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BVI Overnight Multiplier — BVIYHTA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal:       #1D9E75;
+    --teal-light: #E1F5EE;
+    --teal-dark:  #085041;
+    --blue:       #378ADD;
+    --blue-light: #E6F1FB;
+    --blue-dark:  #0C447C;
+    --coral:      #D85A30;
+    --coral-light:#FAECE7;
+    --amber:      #BA7517;
+    --amber-light:#FAEEDA;
+    --gray-50:    #F7F6F2;
+    --gray-100:   #EDECE8;
+    --gray-200:   #D3D1C7;
+    --gray-400:   #888780;
+    --gray-700:   #444441;
+    --gray-900:   #2C2C2A;
+    --white:      #FFFFFF;
+    --radius-sm:  6px;
+    --radius-md:  10px;
+    --radius-lg:  14px;
+    --shadow:     0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--gray-900);
+    background: var(--gray-50);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-400);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .header-brand-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--teal);
+  }
+  .header-tag {
+    font-size: 11px;
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  /* Hero strip */
+  .hero {
+    background: var(--teal-dark);
+    color: var(--white);
+    padding: 2.5rem 2rem 2rem;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 0.5rem;
+  }
+  .hero-title {
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: #9FE1CB;
+  }
+  .hero-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.65);
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  /* Main layout */
+  .main {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 7px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-200);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--white);
+    color: var(--gray-400);
+    transition: all 0.15s;
+  }
+  .tab:hover { border-color: var(--gray-400); color: var(--gray-700); }
+  .tab.active {
+    background: var(--gray-900);
+    border-color: var(--gray-900);
+    color: var(--white);
+  }
+
+  /* Metric cards */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 1.75rem;
+  }
+  .metric-card {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.1rem;
+    box-shadow: var(--shadow);
+  }
+  .metric-label { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+  .metric-value { font-size: 22px; font-weight: 600; color: var(--gray-900); }
+  .metric-sub { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--gray-100); margin: 1.5rem 0; }
+
+  /* Sliders section */
+  .sliders-title { font-size: 13px; font-weight: 600; color: var(--gray-700); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
+  .slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+  .slider-label { font-size: 13px; color: var(--gray-400); min-width: 190px; }
+  input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--gray-200);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--gray-900);
+    border: 2px solid var(--white);
+    box-shadow: 0 0 0 1px var(--gray-400);
+    cursor: pointer;
+  }
+  input[type=range]:focus::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--teal); }
+  .slider-val { font-size: 14px; font-weight: 600; color: var(--gray-900); min-width: 90px; text-align: right; }
+
+  /* Result boxes */
+  .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  @media (max-width: 500px) { .results-grid { grid-template-columns: 1fr; } }
+  .result-box {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius-md);
+    padding: 1.1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .result-box-label { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .result-big { font-size: 26px; font-weight: 700; color: var(--gray-900); }
+  .result-sub { font-size: 12px; color: var(--gray-400); margin-top: 3px; }
+
+  .multiplier-box {
+    background: var(--teal-dark);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    color: var(--white);
+  }
+  .multiplier-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+  .multiplier-big { font-size: 32px; font-weight: 700; color: #9FE1CB; display: inline; }
+  .multiplier-text { font-size: 18px; font-weight: 500; color: var(--white); display: inline; margin-left: 6px; }
+  .multiplier-sub { font-size: 13px; color: rgba(255,255,255,0.65); margin-top: 8px; line-height: 1.6; }
+
+  .note { font-size: 11px; color: var(--gray-400); line-height: 1.7; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--gray-100); }
+
+  /* Advocacy button */
+  .adv-btn {
+    display: inline-block;
+    margin-top: 1.25rem;
+    padding: 9px 18px;
+    background: var(--teal);
+    color: var(--white);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s;
+  }
+  .adv-btn:hover { background: var(--teal-dark); }
+
+  /* Bar chart (breakdown tab) */
+  .bar-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-400); font-weight: 600; margin: 0 0 10px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .bar-name { font-size: 12px; color: var(--gray-400); min-width: 85px; text-align: right; }
+  .bar-track { flex: 1; height: 22px; background: var(--gray-100); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 10px; font-size: 11px; font-weight: 600; transition: width 0.5s ease; }
+  .bar-teal { background: #5DCAA5; color: var(--teal-dark); }
+  .bar-blue { background: #85B7EB; color: var(--blue-dark); }
+  .bar-gray { background: var(--gray-200); color: var(--gray-400); }
+
+  /* Trend chart */
+  .chart-legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 12px; font-size: 12px; color: var(--gray-400); }
+  .chart-legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 12px; height: 3px; border-radius: 2px; }
+  .legend-swatch-dashed { width: 12px; height: 0; border-top: 2px dashed var(--blue); }
+
+  /* Recovery callout */
+  .callout {
+    background: var(--amber-light);
+    border-left: 3px solid var(--amber);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 0.9rem 1.1rem;
+    margin: 1.25rem 0;
+    font-size: 13px;
+    color: var(--gray-900);
+    line-height: 1.6;
+  }
+  .callout strong { color: var(--amber); }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--gray-400);
+    padding: 2rem 1.5rem;
+    border-top: 1px solid var(--gray-200);
+  }
+
+  /* Hidden tabs */
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <div class="header-brand-dot"></div>
+    BVIYHTA
+  </div>
+  <span class="header-tag">Policy tool · 2024 data</span>
+</header>
+
+<div class="hero">
+  <p class="hero-eyebrow">British Virgin Islands · Tourism economics</p>
+  <h1 class="hero-title">The <em>Overnight Multiplier</em></h1>
+  <p class="hero-sub">Overnight visitors represent 28% of BVI arrivals — but a far larger share of economic value. Adjust the assumptions below to quantify the gap and build the case for marine-first policy.</p>
+</div>
+
+<main class="main">
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" role="tab" onclick="setTab('calculator', this)">Calculator</button>
+    <button class="tab" role="tab" onclick="setTab('breakdown', this)">2024 breakdown</button>
+    <button class="tab" role="tab" onclick="setTab('trend', this)">Historical trend</button>
+  </nav>
+
+  <!-- CALCULATOR TAB -->
+  <div id="tab-calculator" class="tab-pane active">
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <p class="metric-label">2024 overnight visitors</p>
+        <p class="metric-value">305,876</p>
+        <p class="metric-sub">BVI Central Statistics Office</p>
+      </div>
+      <div class="metric-card">
+        <p class="metric-label">2024 cruise visitors</p>
+        <p class="metric-value">768,293</p>
+        <p class="metric-sub">BVI Central Statistics Office</p>
+      </div>
+      <div class="metric-card">
+        <p class="metric-label">Overnight share of arrivals</p>
+        <p class="metric-value">28%</p>
+        <p class="metric-sub">of 1,092,139 total arrivals</p>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <p class="sliders-title">Adjust spend assumptions</p>
+
+    <div class="slider-row">
+      <span class="slider-label">Overnight spend per person / day</span>
+      <input type="range" min="100" max="800" step="10" value="300" id="sl-overnight" oninput="calc()">
+      <span class="slider-val" id="lbl-overnight">$300</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label">Average nights stayed</span>
+      <input type="range" min="3" max="14" step="1" value="7" id="sl-nights" oninput="calc()">
+      <span class="slider-val" id="lbl-nights">7 nights</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label">Cruise visitor spend per person</span>
+      <input type="range" min="30" max="150" step="5" value="75" id="sl-cruise" oninput="calc()">
+      <span class="slider-val" id="lbl-cruise">$75</span>
+    </div>
+
+    <hr class="divider">
+
+    <div class="results-grid">
+      <div class="result-box">
+        <p class="result-box-label">Estimated overnight revenue (2024)</p>
+        <p class="result-big" id="res-overnight-rev">$642M</p>
+        <p class="result-sub" id="res-overnight-pp">$2,100 per visitor</p>
+      </div>
+      <div class="result-box">
+        <p class="result-box-label">Estimated cruise revenue (2024)</p>
+        <p class="result-big" id="res-cruise-rev">$58M</p>
+        <p class="result-sub" id="res-cruise-pp">$75 per visitor</p>
+      </div>
+    </div>
+
+    <div class="multiplier-box">
+      <p class="multiplier-label">The overnight multiplier</p>
+      <span class="multiplier-big" id="res-mult">28×</span>
+      <span class="multiplier-text">more revenue per visitor</span>
+      <p class="multiplier-sub" id="res-summary">Overnight visitors (28% of arrivals) generate an estimated <strong id="res-pct" style="color:#9FE1CB;">92%</strong> of direct visitor spend — a ratio that headline arrival statistics do not reflect.</p>
+    </div>
+
+    <p class="note">Spend figures are adjustable assumptions. Caribbean overnight benchmarks (CTO / WTTC) typically range $200–$500 per person per day; cruise day-visit spend typically $60–$110 per person. Adjust sliders to reflect BVI-specific data when available. All revenue estimates are indicative only and intended for illustrative advocacy use. Source: BVI Central Statistics Office (arrivals, 2024, provisional).</p>
+  </div>
+
+  <!-- BREAKDOWN TAB -->
+  <div id="tab-breakdown" class="tab-pane">
+
+    <div class="metric-grid" style="margin-bottom: 1.5rem;">
+      <div class="metric-card">
+        <p class="metric-label">Overnight growth YoY</p>
+        <p class="metric-value" style="color:var(--teal);">+16.7%</p>
+        <p class="metric-sub">+43,796 vs 2023</p>
+      </div>
+      <div class="metric-card">
+        <p class="metric-label">Cruise growth YoY</p>
+        <p class="metric-value" style="color:var(--blue);">+6.8%</p>
+        <p class="metric-sub">+48,774 vs 2023</p>
+      </div>
+      <div class="metric-card">
+        <p class="metric-label">Overnight vs 2016 peak</p>
+        <p class="metric-value" style="color:var(--coral);">−25%</p>
+        <p class="metric-sub">407,764 in 2016</p>
+      </div>
+    </div>
+
+    <p class="bar-section-title">Share of total arrivals (1,092,139 visitors)</p>
+    <div class="bar-row">
+      <span class="bar-name">Cruise</span>
+      <div class="bar-track"><div class="bar-fill bar-blue" style="width:70.3%">70%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-name">Overnight</span>
+      <div class="bar-track"><div class="bar-fill bar-teal" style="width:28.0%">28%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-name">Day trippers</span>
+      <div class="bar-track"><div class="bar-fill bar-gray" style="width:1.6%;padding-left:4px;">2%</div></div>
+    </div>
+
+    <hr class="divider">
+    <p class="bar-section-title">Estimated share of direct visitor spend (at default assumptions: $300/night × 7 nights, $75 cruise)</p>
+    <div class="bar-row">
+      <span class="bar-name">Overnight</span>
+      <div class="bar-track"><div class="bar-fill bar-teal" id="bar-rev-overnight" style="width:92%">92%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-name">Cruise</span>
+      <div class="bar-track"><div class="bar-fill bar-blue" id="bar-rev-cruise" style="width:8%">8%</div></div>
+    </div>
+
+    <div class="callout">
+      <strong>Recovery gap:</strong> Cruise arrivals in 2024 (768,293) have surpassed the 2016 pre-Irma peak (699,105) by 10%. Overnight arrivals (305,876) remain 25% below the 2016 peak of 407,764. Headline arrival totals mask this structural gap in the higher-value segment.
+    </div>
+  </div>
+
+  <!-- TREND TAB -->
+  <div id="tab-trend" class="tab-pane">
+    <div style="position: relative; width: 100%; height: 340px;">
+      <canvas id="trendChart" role="img" aria-label="Line chart of BVI overnight and cruise visitor arrivals 2013 to 2024. Overnight peaked at 408,000 in 2016 and remains 25% below that level in 2024. Cruise has exceeded 2016 levels.">Overnight visitors by year: 366k (2013), 386k (2014), 393k (2015), 408k (2016), 336k (2017), 192k (2018), 302k (2019), 83k (2020), 59k (2021), 174k (2022), 262k (2023), 306k (2024).</canvas>
+    </div>
+    <div class="chart-legend">
+      <div class="chart-legend-item"><span class="legend-swatch" style="background:var(--teal); height:3px;"></span>Overnight visitors</div>
+      <div class="chart-legend-item"><span class="legend-swatch-dashed"></span>Cruise visitors</div>
+      <div class="chart-legend-item"><span style="display:inline-block;width:3px;height:14px;background:var(--coral);border-radius:2px;"></span>Hurricane Irma (2017)</div>
+    </div>
+
+    <div class="callout" style="margin-top:1.5rem;">
+      <strong>The divergence:</strong> Cruise and overnight arrivals tracked closely through 2016. Post-Irma recovery has been asymmetric — cruise volumes have fully recovered while overnight remains structurally depressed. A policy framework benchmarking BVI against conventional Caribbean resort destinations fails to capture this dynamic.
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  British Virgin Islands Yachting, Hotel &amp; Tourism Association · Data: BVI Central Statistics Office (provisional, 2024) · Tool for illustrative advocacy use
+</footer>
+
+<script>
+const ON = 305876, CR = 768293;
+
+function fmt(n) {
+  if (n >= 1e9) return '$' + (n/1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return '$' + Math.round(n/1e6) + 'M';
+  return '$' + n.toLocaleString();
+}
+
+function calc() {
+  const spendPerNight = +document.getElementById('sl-overnight').value;
+  const nights = +document.getElementById('sl-nights').value;
+  const cruiseSpend = +document.getElementById('sl-cruise').value;
+
+  document.getElementById('lbl-overnight').textContent = '$' + spendPerNight;
+  document.getElementById('lbl-nights').textContent = nights + ' night' + (nights > 1 ? 's' : '');
+  document.getElementById('lbl-cruise').textContent = '$' + cruiseSpend;
+
+  const onPP = spendPerNight * nights;
+  const onRev = ON * onPP;
+  const crRev = CR * cruiseSpend;
+  const total = onRev + crRev;
+  const mult = Math.round(onPP / cruiseSpend);
+  const onPct = Math.round(onRev / total * 100);
+  const crPct = 100 - onPct;
+
+  document.getElementById('res-overnight-rev').textContent = fmt(onRev);
+  document.getElementById('res-overnight-pp').textContent = '$' + onPP.toLocaleString() + ' per visitor';
+  document.getElementById('res-cruise-rev').textContent = fmt(crRev);
+  document.getElementById('res-cruise-pp').textContent = '$' + cruiseSpend + ' per visitor';
+  document.getElementById('res-mult').textContent = mult + '×';
+  document.getElementById('res-pct').textContent = onPct + '%';
+
+  if (document.getElementById('bar-rev-overnight')) {
+    document.getElementById('bar-rev-overnight').style.width = onPct + '%';
+    document.getElementById('bar-rev-overnight').textContent = onPct + '%';
+    document.getElementById('bar-rev-cruise').style.width = Math.max(crPct, 2) + '%';
+    document.getElementById('bar-rev-cruise').textContent = crPct + '%';
+  }
+}
+
+let chartBuilt = false;
+
+function setTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'trend' && !chartBuilt) buildChart();
+}
+
+function buildChart() {
+  chartBuilt = true;
+  const years = ['2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024'];
+  const overnight = [366108,386127,393018,407764,335712,192312,302499,82687,59289,174344,262080,305876];
+  const cruise = [367362,360891,516436,699105,409723,200552,575134,219434,70090,343571,719519,768293];
+
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        {
+          label: 'Overnight',
+          data: overnight,
+          borderColor: '#1D9E75',
+          backgroundColor: 'rgba(29,158,117,0.07)',
+          pointBackgroundColor: '#1D9E75',
+          pointRadius: 4,
+          borderWidth: 2.5,
+          tension: 0.35,
+          fill: true
+        },
+        {
+          label: 'Cruise',
+          data: cruise,
+          borderColor: '#378ADD',
+          backgroundColor: 'transparent',
+          pointBackgroundColor: '#378ADD',
+          pointRadius: 4,
+          borderWidth: 2,
+          borderDash: [5,3],
+          tension: 0.35,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString()
+          }
+        },
+        annotation: {
+          annotations: {
+            irma: {
+              type: 'line',
+              xMin: '2017', xMax: '2017',
+              borderColor: '#D85A30',
+              borderWidth: 1.5,
+              borderDash: [4,3],
+              label: {
+                content: 'Irma',
+                display: true,
+                position: 'start',
+                color: '#D85A30',
+                font: { size: 10 }
+              }
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k' : v,
+            color: '#888780',
+            font: { size: 11 }
+          },
+          grid: { color: 'rgba(136,135,128,0.12)' }
+        },
+        x: {
+          ticks: {
+            color: '#888780',
+            font: { size: 11 },
+            autoSkip: false,
+            maxRotation: 45
+          },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+calc();
+</script>
+</body>
+</html>
