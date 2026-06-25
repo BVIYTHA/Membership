@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BVI Economic Value Tool — BVIYHTA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#1D9E75;--teal-mid:#5DCAA5;--teal-dark:#085041;
+  --blue:#378ADD;--blue-dark:#0C447C;
+  --coral:#D85A30;
+  --amber:#BA7517;--amber-light:#FAEEDA;
+  --gray-50:#F7F6F2;--gray-100:#EDECE8;--gray-200:#D3D1C7;
+  --gray-400:#888780;--gray-600:#5F5E5A;--gray-800:#444441;--gray-900:#2C2C2A;
+  --white:#FFFFFF;
+  --r-sm:6px;--r-md:10px;--r-lg:14px;
+  --shadow:0 1px 3px rgba(0,0,0,0.07),0 4px 12px rgba(0,0,0,0.05);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;color:var(--gray-900);background:var(--gray-50);min-height:100vh}
+
+.topnav{background:var(--white);border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:52px;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px}
+.brand{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--gray-400);letter-spacing:.06em;text-transform:uppercase}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--teal)}
+.page-tabs{display:flex;gap:4px}
+.page-tab{padding:6px 16px;border-radius:var(--r-sm);border:1px solid transparent;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:var(--gray-400);transition:all .15s}
+.page-tab:hover{color:var(--gray-800)}
+.page-tab.active{background:var(--gray-900);color:var(--white)}
+
+.sync-status{font-size:11px;color:var(--gray-400);display:flex;align-items:center;gap:6px}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-200);flex-shrink:0}
+.sync-dot.synced{background:var(--teal)}
+.sync-dot.saving{background:var(--amber);animation:pulse .8s infinite}
+.sync-dot.error{background:var(--coral)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.hero{background:var(--teal-dark);color:var(--white);padding:2rem 2rem 1.75rem}
+.hero-eyebrow{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.4rem}
+.hero-title{font-size:clamp(20px,3.5vw,32px);font-weight:600;line-height:1.2;margin-bottom:.5rem}
+.hero-title em{font-style:normal;color:#9FE1CB}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.6);max-width:540px;line-height:1.7}
+
+.main{max-width:860px;margin:0 auto;padding:1.75rem 1.5rem 4rem}
+.section-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-400);font-weight:600;margin-bottom:.6rem}
+
+.assumptions{background:var(--white);border:1px solid var(--gray-100);border-radius:var(--r-lg);padding:1.1rem 1.25rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+.assumptions-title{font-size:12px;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.9rem}
+.sl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem 1.5rem}
+.sl-row{display:flex;flex-direction:column;gap:4px}
+.sl-top{display:flex;justify-content:space-between;align-items:baseline}
+.sl-label{font-size:12px;color:var(--gray-400)}
+.sl-val{font-size:13px;font-weight:600;color:var(--gray-900)}
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--gray-200);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gray-900);border:2px solid var(--white);box-shadow:0 0 0 1px var(--gray-400);cursor:pointer}
+input[type=range]:focus::-webkit-slider-thumb{box-shadow:0 0 0 2px var(--teal)}
+
+.year-bar{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
+.year-bar label{font-size:12px;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.year-bar select{border:1px solid var(--gray-200);border-radius:var(--r-sm);padding:5px 10px;font-size:13px;color:var(--gray-900);background:var(--white);cursor:pointer;outline:none}
+.btn-clear{margin-left:auto;padding:5px 12px;border:1px solid var(--gray-200);border-radius:var(--r-sm);font-size:12px;color:var(--gray-400);background:transparent;cursor:pointer}
+.btn-clear:hover{border-color:var(--coral);color:var(--coral)}
+
+.month-table-wrap{background:var(--white);border:1px solid var(--gray-100);border-radius:var(--r-lg);padding:1.1rem 1.25rem;margin-bottom:1.5rem;box-shadow:var(--shadow);overflow-x:auto}
+table.month-table{width:100%;border-collapse:collapse;font-size:13px}
+table.month-table th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-400);font-weight:600;padding:0 8px 8px;text-align:right}
+table.month-table th:first-child{text-align:left}
+table.month-table td{padding:5px 8px;vertical-align:middle;border-top:1px solid var(--gray-100)}
+table.month-table td:first-child{font-size:12px;color:var(--gray-600);font-weight:500;text-align:left}
+table.month-table td.ev-cell{font-weight:600;color:var(--teal-dark);text-align:right}
+table.month-table td.num-cell{text-align:right;color:var(--gray-800)}
+table.month-table tfoot td{font-weight:600;font-size:13px;border-top:2px solid var(--gray-200);padding-top:8px}
+table.month-table input.cell-input{width:100px;border:1px solid var(--gray-200);border-radius:4px;padding:4px 6px;font-size:13px;text-align:right;color:var(--gray-900);background:var(--gray-50);outline:none;-moz-appearance:textfield}
+table.month-table input.cell-input::-webkit-inner-spin-button{-webkit-appearance:none}
+table.month-table input.cell-input:focus{border-color:var(--teal);background:var(--white)}
+tr.total-row td{background:var(--gray-50)}
+
+.cumul-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:1.5rem}
+.cumul-card{background:var(--white);border:1px solid var(--gray-100);border-radius:var(--r-md);padding:.9rem 1.1rem;box-shadow:var(--shadow)}
+.c-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-400);margin-bottom:4px}
+.c-value{font-size:20px;font-weight:700;color:var(--gray-900)}
+.c-sub{font-size:11px;color:var(--gray-400);margin-top:2px}
+.c-value.teal{color:var(--teal-dark)}
+.c-value.blue{color:var(--blue-dark)}
+
+.mult-box{background:var(--teal-dark);color:var(--white);border-radius:var(--r-md);padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.mult-big{font-size:36px;font-weight:700;color:#9FE1CB;line-height:1}
+.mult-desc{font-size:13px;color:rgba(255,255,255,.75);line-height:1.6}
+.mult-desc strong{color:var(--white)}
+
+.annual-chart-wrap{background:var(--white);border:1px solid var(--gray-100);border-radius:var(--r-lg);padding:1.25rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+.chart-legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--gray-400)}
+.legend-item{display:flex;align-items:center;gap:6px}
+.l-swatch{width:12px;height:10px;border-radius:2px}
+
+.annual-table-wrap{background:var(--white);border:1px solid var(--gray-100);border-radius:var(--r-lg);padding:1.1rem 1.25rem;box-shadow:var(--shadow);overflow-x:auto}
+table.annual-table{width:100%;border-collapse:collapse;font-size:13px}
+table.annual-table th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-400);font-weight:600;padding:0 10px 8px;text-align:right}
+table.annual-table th:first-child{text-align:left}
+table.annual-table td{padding:6px 10px;border-top:1px solid var(--gray-100);text-align:right}
+table.annual-table td:first-child{text-align:left;font-weight:600;color:var(--gray-800)}
+table.annual-table td.ev-total{font-weight:700;color:var(--teal-dark)}
+table.annual-table tr.partial td{color:var(--gray-400);font-style:italic}
+table.annual-table tr.partial td:first-child{font-weight:600;color:var(--gray-600)}
+table.annual-table tr:hover td{background:var(--gray-50)}
+
+.note{font-size:11px;color:var(--gray-400);line-height:1.7;margin-top:1rem;padding-top:.9rem;border-top:1px solid var(--gray-100)}
+.callout{background:var(--amber-light);border-left:3px solid var(--amber);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:.85rem 1rem;font-size:13px;color:var(--gray-900);line-height:1.6;margin-bottom:1.25rem}
+.callout strong{color:var(--amber)}
+
+.page{display:none}
+.page.active{display:block}
+
+.loading-overlay{position:fixed;inset:0;background:rgba(247,246,242,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:999;font-size:13px;color:var(--gray-600)}
+.spinner{width:28px;height:28px;border:3px solid var(--gray-200);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div id="loading-overlay" class="loading-overlay">
+  <div class="spinner"></div>
+  <span>Loading saved data…</span>
+</div>
+
+<nav class="topnav">
+  <div class="brand"><div class="brand-dot"></div>BVIYHTA · Economic Value Tool</div>
+  <div class="page-tabs">
+    <button class="page-tab active" onclick="showPage('p1',this)">Monthly tracker</button>
+    <button class="page-tab" onclick="showPage('p2',this)">Annual 2013–2026</button>
+  </div>
+  <div class="sync-status">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">Loading…</span>
+  </div>
+</nav>
+
+<!-- PAGE 1 -->
+<div id="p1" class="page active">
+  <div class="hero">
+    <p class="hero-eyebrow">Page 1 · Monthly input</p>
+    <h1 class="hero-title">Monthly <em>economic value</em> tracker</h1>
+    <p class="hero-sub">Enter monthly visitor arrivals and see estimated economic value per month — numbers are saved centrally and shared across all users of this tool.</p>
+  </div>
+  <div class="main">
+
+    <div class="assumptions">
+      <p class="assumptions-title">Spend assumptions</p>
+      <div class="sl-grid">
+        <div class="sl-row">
+          <div class="sl-top"><span class="sl-label">Overnight spend per person / day</span><span class="sl-val" id="lbl-spd">$500</span></div>
+          <input type="range" min="100" max="1000" step="25" value="500" id="sl-spd" oninput="recalc()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-top"><span class="sl-label">Average nights stayed</span><span class="sl-val" id="lbl-nts">5 nights</span></div>
+          <input type="range" min="1" max="14" step="1" value="5" id="sl-nts" oninput="recalc()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-top"><span class="sl-label">Cruise visitor spend per person</span><span class="sl-val" id="lbl-cr">$75</span></div>
+          <input type="range" min="30" max="200" step="5" value="75" id="sl-cr" oninput="recalc()">
+        </div>
+      </div>
+    </div>
+
+    <div class="month-table-wrap">
+      <div class="year-bar">
+        <label>Year</label>
+        <select id="year-select" onchange="switchYear(this.value)"></select>
+        <span style="font-size:11px;color:var(--gray-400)" id="last-saved-label"></span>
+        <button class="btn-clear" onclick="clearYear()">Clear this year</button>
+      </div>
+      <p class="section-label">Monthly arrivals</p>
+      <table class="month-table">
+        <thead>
+          <tr>
+            <th style="text-align:left">Month</th>
+            <th>Overnight visitors</th>
+            <th>Cruise visitors</th>
+            <th>Overnight EV</th>
+            <th>Cruise EV</th>
+            <th>Total EV</th>
+          </tr>
+        </thead>
+        <tbody id="month-tbody"></tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td>Cumulative total</td>
+            <td class="num-cell" id="tot-on">—</td>
+            <td class="num-cell" id="tot-cr">—</td>
+            <td class="ev-cell" id="tot-on-ev">—</td>
+            <td class="ev-cell" id="tot-cr-ev">—</td>
+            <td class="ev-cell" id="tot-ev">—</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <p class="section-label">Cumulative totals (entered months only)</p>
+    <div class="cumul-grid">
+      <div class="cumul-card"><p class="c-label">Overnight visitors</p><p class="c-value teal" id="sum-on">—</p><p class="c-sub">cumulative</p></div>
+      <div class="cumul-card"><p class="c-label">Cruise visitors</p><p class="c-value blue" id="sum-cr">—</p><p class="c-sub">cumulative</p></div>
+      <div class="cumul-card"><p class="c-label">Overnight EV</p><p class="c-value teal" id="sum-on-ev">—</p><p class="c-sub">estimated spend</p></div>
+      <div class="cumul-card"><p class="c-label">Cruise EV</p><p class="c-value blue" id="sum-cr-ev">—</p><p class="c-sub">estimated spend</p></div>
+      <div class="cumul-card" style="border-color:var(--teal-mid)"><p class="c-label">Total EV</p><p class="c-value teal" id="sum-total-ev">—</p><p class="c-sub">all segments</p></div>
+    </div>
+
+    <div class="mult-box" id="mult-box" style="display:none">
+      <div class="mult-big" id="mult-num">—</div>
+      <div class="mult-desc"><strong id="mult-desc-1">—</strong><br><span id="mult-desc-2">—</span></div>
+    </div>
+
+    <p class="note">Overnight EV = visitors × spend per day × nights stayed. Cruise EV = visitors × cruise spend per person. Figures are illustrative and intended for advocacy use. Data saved centrally — visible to all users of this file. Source: BVI Central Statistics Office (provisional).</p>
+  </div>
+</div>
+
+<!-- PAGE 2 -->
+<div id="p2" class="page">
+  <div class="hero">
+    <p class="hero-eyebrow">Page 2 · Annual view</p>
+    <h1 class="hero-title">Economic value <em>2013–2026</em></h1>
+    <p class="hero-sub">Estimated annual economic value from official BVI arrival data. 2026 figures are partial (Jan–Apr only).</p>
+  </div>
+  <div class="main">
+
+    <div class="assumptions">
+      <p class="assumptions-title">Spend assumptions — shared with monthly tracker</p>
+      <div class="sl-grid">
+        <div class="sl-row">
+          <div class="sl-top"><span class="sl-label">Overnight spend per person / day</span><span class="sl-val" id="lbl-spd2">$500</span></div>
+          <input type="range" min="100" max="1000" step="25" value="500" id="sl-spd2" oninput="syncSliders('2');recalc2()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-top"><span class="sl-label">Average nights stayed</span><span class="sl-val" id="lbl-nts2">5 nights</span></div>
+          <input type="range" min="1" max="14" step="1" value="5" id="sl-nts2" oninput="syncSliders('2');recalc2()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-top"><span class="sl-label">Cruise visitor spend per person</span><span class="sl-val" id="lbl-cr2">$75</span></div>
+          <input type="range" min="30" max="200" step="5" value="75" id="sl-cr2" oninput="syncSliders('2');recalc2()">
+        </div>
+      </div>
+    </div>
+
+    <div class="annual-chart-wrap">
+      <p class="section-label">Estimated economic value by year ($M)</p>
+      <div style="position:relative;width:100%;height:300px">
+        <canvas id="annualChart" role="img" aria-label="Stacked bar chart: BVI overnight and cruise economic value 2013–2026">Annual economic value 2013–2026 split between overnight and cruise visitor spend.</canvas>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><span class="l-swatch" style="background:#1D9E75"></span>Overnight EV</div>
+        <div class="legend-item"><span class="l-swatch" style="background:#85B7EB"></span>Cruise EV</div>
+        <div class="legend-item"><span style="font-size:11px;font-style:italic">* 2026 = Jan–Apr only (provisional)</span></div>
+      </div>
+    </div>
+
+    <div class="annual-table-wrap">
+      <p class="section-label" style="margin-bottom:.75rem">Annual detail</p>
+      <table class="annual-table">
+        <thead>
+          <tr>
+            <th style="text-align:left">Year</th>
+            <th>Overnight arrivals</th>
+            <th>Cruise arrivals</th>
+            <th>Overnight EV</th>
+            <th>Cruise EV</th>
+            <th>Total EV</th>
+            <th>ON share</th>
+          </tr>
+        </thead>
+        <tbody id="annual-tbody"></tbody>
+      </table>
+    </div>
+
+    <p class="note">Annual arrivals sourced from BVI Central Statistics Office (provisional; subject to revision). 2026 covers January–April only. Economic value calculated using spend assumptions above.</p>
+  </div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const ANNUAL = [
+  [2013,366108,367362,false],[2014,386127,360891,false],[2015,393018,516436,false],
+  [2016,407764,699105,false],[2017,335712,409723,false],[2018,192312,200552,false],
+  [2019,302499,575134,false],[2020,82687,219434,false],[2021,59289,70090,false],
+  [2022,174344,343571,false],[2023,262080,719519,false],[2024,305876,768293,false],
+  [2025,302705,875127,false],[2026,146990,572423,true],
+];
+
+// ─── STORAGE (shared via window.storage API) ──────────────────────────────────
+// Key format: "bvi_month_{year}" → JSON {on:{0:n,...}, cr:{0:n,...}, savedAt:iso}
+
+const STORAGE_PREFIX = 'bvi_month_';
+
+let saveTimer = null;
+let currentYear = new Date().getFullYear();
+let monthData = {}; // { on: {0:v,...}, cr: {0:v,...} }
+
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+async function loadYear(year) {
+  setSyncStatus('', 'Loading…');
+  try {
+    const key = STORAGE_PREFIX + year;
+    const result = await window.storage.get(key, true);
+    if (result && result.value) {
+      monthData = JSON.parse(result.value);
+    } else {
+      monthData = { on: {}, cr: {} };
+    }
+  } catch(e) {
+    monthData = { on: {}, cr: {} };
+  }
+  populateInputs();
+  recalc();
+  setSyncStatus('synced', 'Up to date');
+}
+
+async function saveYear() {
+  const year = currentYear;
+  setSyncStatus('saving', 'Saving…');
+  try {
+    // Gather current values
+    const on = {}, cr = {};
+    MONTHS.forEach((m, i) => {
+      const ov = document.getElementById('on-' + i).value;
+      const cv = document.getElementById('cr-' + i).value;
+      if (ov) on[i] = ov;
+      if (cv) cr[i] = cv;
+    });
+    const payload = JSON.stringify({ on, cr, savedAt: new Date().toISOString() });
+    await window.storage.set(STORAGE_PREFIX + year, payload, true);
+    monthData = { on, cr };
+    const now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-saved-label').textContent = 'Saved ' + now;
+    setSyncStatus('synced', 'Saved');
+  } catch(e) {
+    setSyncStatus('error', 'Save failed');
+  }
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveYear, 1200);
+}
+
+function populateInputs() {
+  MONTHS.forEach((m, i) => {
+    const onEl = document.getElementById('on-' + i);
+    const crEl = document.getElementById('cr-' + i);
+    if (onEl) onEl.value = (monthData.on && monthData.on[i]) ? monthData.on[i] : '';
+    if (crEl) crEl.value = (monthData.cr && monthData.cr[i]) ? monthData.cr[i] : '';
+  });
+  // Show last saved time
+  if (monthData.savedAt) {
+    const d = new Date(monthData.savedAt);
+    document.getElementById('last-saved-label').textContent = 'Last saved ' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  } else {
+    document.getElementById('last-saved-label').textContent = '';
+  }
+}
+
+// ─── YEAR SELECTOR ───────────────────────────────────────────────────────────
+
+function buildYearSelect() {
+  const sel = document.getElementById('year-select');
+  const thisYear = new Date().getFullYear();
+  sel.innerHTML = '';
+  for (let y = thisYear; y >= 2013; y--) {
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y;
+    if (y === currentYear) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function switchYear(y) {
+  currentYear = +y;
+  loadYear(currentYear);
+}
+
+async function clearYear() {
+  if (!confirm('Clear all entries for ' + currentYear + '? This will remove them for all users.')) return;
+  monthData = { on: {}, cr: {} };
+  MONTHS.forEach((m, i) => {
+    document.getElementById('on-' + i).value = '';
+    document.getElementById('cr-' + i).value = '';
+  });
+  document.getElementById('last-saved-label').textContent = '';
+  await saveYear();
+  recalc();
+}
+
+// ─── BUILD TABLE ─────────────────────────────────────────────────────────────
+
+function buildMonthTable() {
+  const tbody = document.getElementById('month-tbody');
+  tbody.innerHTML = '';
+  MONTHS.forEach((m, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${m}</td>
+      <td><input class="cell-input" type="number" min="0" id="on-${i}" placeholder="0" oninput="scheduleSave();recalc()"></td>
+      <td><input class="cell-input" type="number" min="0" id="cr-${i}" placeholder="0" oninput="scheduleSave();recalc()"></td>
+      <td class="ev-cell" id="on-ev-${i}">—</td>
+      <td class="ev-cell" id="cr-ev-${i}">—</td>
+      <td class="ev-cell" id="tot-ev-${i}">—</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── FORMAT ──────────────────────────────────────────────────────────────────
+
+function fmtM(n) {
+  if (!n && n !== 0) return '—';
+  if (Math.abs(n) >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+  if (Math.abs(n) >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtN(n) { return (n != null && !isNaN(n)) ? Math.round(n).toLocaleString() : '—'; }
+function fmtPct(n) { return Math.round(n) + '%'; }
+
+// ─── PAGE 1 RECALC ───────────────────────────────────────────────────────────
+
+function recalc() {
+  const spd = +document.getElementById('sl-spd').value;
+  const nts = +document.getElementById('sl-nts').value;
+  const cr  = +document.getElementById('sl-cr').value;
+  const onPP = spd * nts;
+
+  document.getElementById('lbl-spd').textContent = '$' + spd;
+  document.getElementById('lbl-nts').textContent = nts + (nts === 1 ? ' night' : ' nights');
+  document.getElementById('lbl-cr').textContent  = '$' + cr;
+
+  let sumOn=0,sumCr=0,sumOnEV=0,sumCrEV=0,hasData=false;
+  MONTHS.forEach((m,i) => {
+    const onVal = parseFloat(document.getElementById('on-'+i).value)||0;
+    const crVal = parseFloat(document.getElementById('cr-'+i).value)||0;
+    const hasRow = onVal>0||crVal>0;
+    const onEV=onVal*onPP, crEV=crVal*cr, totEV=onEV+crEV;
+    document.getElementById('on-ev-'+i).textContent = hasRow?fmtM(onEV):'—';
+    document.getElementById('cr-ev-'+i).textContent = hasRow?fmtM(crEV):'—';
+    document.getElementById('tot-ev-'+i).textContent= hasRow?fmtM(totEV):'—';
+    if(hasRow){sumOn+=onVal;sumCr+=crVal;sumOnEV+=onEV;sumCrEV+=crEV;hasData=true;}
+  });
+  const sumTot=sumOnEV+sumCrEV;
+  const s=(id,v)=>document.getElementById(id).textContent=v;
+  s('tot-on',    hasData?fmtN(sumOn):'—');
+  s('tot-cr',    hasData?fmtN(sumCr):'—');
+  s('tot-on-ev', hasData?fmtM(sumOnEV):'—');
+  s('tot-cr-ev', hasData?fmtM(sumCrEV):'—');
+  s('tot-ev',    hasData?fmtM(sumTot):'—');
+  s('sum-on',    hasData?fmtN(sumOn):'—');
+  s('sum-cr',    hasData?fmtN(sumCr):'—');
+  s('sum-on-ev', hasData?fmtM(sumOnEV):'—');
+  s('sum-cr-ev', hasData?fmtM(sumCrEV):'—');
+  s('sum-total-ev',hasData?fmtM(sumTot):'—');
+
+  const mb=document.getElementById('mult-box');
+  if(hasData&&sumCrEV>0&&sumOn>0&&sumCr>0){
+    const multPP=Math.round(onPP/cr);
+    const onShare=Math.round(sumOnEV/sumTot*100);
+    s('mult-num',multPP+'×');
+    s('mult-desc-1','Each overnight visitor generates '+multPP+'× more revenue than a cruise visitor');
+    s('mult-desc-2','Overnight visitors: '+Math.round(sumOn/(sumOn+sumCr)*100)+'% of arrivals, ~'+onShare+'% of direct spend.');
+    mb.style.display='flex';
+  } else { mb.style.display='none'; }
+}
+
+// ─── SYNC SLIDERS ────────────────────────────────────────────────────────────
+
+function syncSliders(from) {
+  const suffix = from === '2' ? '2' : '';
+  const other  = from === '2' ? ''  : '2';
+  ['spd','nts','cr'].forEach(k => {
+    const src = document.getElementById('sl-'+k+suffix);
+    const dst = document.getElementById('sl-'+k+other);
+    if(src&&dst) dst.value = src.value;
+  });
+  ['spd','nts','cr'].forEach(k => {
+    const v = +document.getElementById('sl-'+k).value;
+    const txt = k==='nts' ? v+(v===1?' night':' nights') : '$'+v;
+    document.getElementById('lbl-'+k).textContent = txt;
+    document.getElementById('lbl-'+k+'2').textContent = txt;
+  });
+  recalc();
+}
+
+// ─── PAGE 2 ──────────────────────────────────────────────────────────────────
+
+let annualChart = null;
+
+function recalc2() {
+  const spd = +document.getElementById('sl-spd2').value;
+  const nts = +document.getElementById('sl-nts2').value;
+  const cr  = +document.getElementById('sl-cr2').value;
+  const onPP = spd * nts;
+
+  document.getElementById('lbl-spd2').textContent = '$'+spd;
+  document.getElementById('lbl-nts2').textContent = nts+(nts===1?' night':' nights');
+  document.getElementById('lbl-cr2').textContent  = '$'+cr;
+
+  const rows = ANNUAL.map(([yr,on,cruise,partial]) => {
+    const onEV=on*onPP, crEV=cruise*cr, totEV=onEV+crEV;
+    return {yr,on,cruise,onEV,crEV,totEV,onShare:Math.round(onEV/totEV*100),partial};
+  });
+
+  // Table
+  const tbody = document.getElementById('annual-tbody');
+  tbody.innerHTML='';
+  rows.forEach(r => {
+    const tr=document.createElement('tr');
+    if(r.partial) tr.classList.add('partial');
+    tr.innerHTML=`
+      <td>${r.yr}${r.partial?'*':''}</td>
+      <td>${fmtN(r.on)}</td><td>${fmtN(r.cruise)}</td>
+      <td style="color:var(--teal-dark);font-weight:600">${fmtM(r.onEV)}</td>
+      <td style="color:var(--blue-dark)">${fmtM(r.crEV)}</td>
+      <td class="ev-total">${fmtM(r.totEV)}</td>
+      <td>${fmtPct(r.onShare)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Chart
+  const p2Visible = document.getElementById('p2').classList.contains('active');
+  const labels  = rows.map(r => r.partial ? r.yr+'*' : String(r.yr));
+  const onData  = rows.map(r => +(r.onEV/1e6).toFixed(2));
+  const crData  = rows.map(r => +(r.crEV/1e6).toFixed(2));
+
+  if(!p2Visible){ recalc2._pending={labels,onData,crData}; return; }
+  recalc2._pending=null;
+
+  if(annualChart){
+    annualChart.data.labels=labels;
+    annualChart.data.datasets[0].data=onData;
+    annualChart.data.datasets[1].data=crData;
+    annualChart.update();
+  } else {
+    annualChart = new Chart(document.getElementById('annualChart'),{
+      type:'bar',
+      data:{labels,datasets:[
+        {label:'Overnight EV ($M)',data:onData,backgroundColor:'#1D9E75',borderRadius:3,borderSkipped:false},
+        {label:'Cruise EV ($M)',   data:crData,backgroundColor:'#85B7EB',borderRadius:3,borderSkipped:false}
+      ]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': $'+ctx.parsed.y.toFixed(1)+'M'}}},
+        scales:{
+          x:{stacked:true,ticks:{color:'#888780',font:{size:11},autoSkip:false,maxRotation:45},grid:{display:false}},
+          y:{stacked:true,ticks:{callback:v=>'$'+v+'M',color:'#888780',font:{size:11}},grid:{color:'rgba(136,135,128,0.12)'}}
+        }
+      }
+    });
+  }
+}
+
+// ─── PAGE SWITCHING ──────────────────────────────────────────────────────────
+
+function showPage(id,btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.page-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='p2'){
+    recalc2();
+    setTimeout(()=>{ if(annualChart) annualChart.resize(); },50);
+  }
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+
+async function init() {
+  buildYearSelect();
+  buildMonthTable();
+  recalc2(); // populate table (chart deferred until visible)
+
+  // Check if shared storage is available
+  if (typeof window.storage !== 'undefined') {
+    await loadYear(currentYear);
+  } else {
+    // Fallback: localStorage only
+    setSyncStatus('error', 'Shared storage unavailable — saving locally only');
+    try {
+      const raw = localStorage.getItem('bvi_month_' + currentYear);
+      if (raw) monthData = JSON.parse(raw);
+      else monthData = { on:{}, cr:{} };
+    } catch(e) { monthData = { on:{}, cr:{} }; }
+    populateInputs();
+    recalc();
+    // Override scheduleSave to use localStorage
+    window.saveYear = async function() {
+      const on={}, cr={};
+      MONTHS.forEach((m,i)=>{ const ov=document.getElementById('on-'+i).value; const cv=document.getElementById('cr-'+i).value; if(ov)on[i]=ov; if(cv)cr[i]=cv; });
+      localStorage.setItem('bvi_month_'+currentYear, JSON.stringify({on,cr,savedAt:new Date().toISOString()}));
+      const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('last-saved-label').textContent='Saved locally '+now;
+    };
+  }
+
+  document.getElementById('loading-overlay').style.display='none';
+}
+
+init();
+</script>
+</body>
+</html>
