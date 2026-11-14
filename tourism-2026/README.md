@@ -4,12 +4,10 @@ British Virgin Islands Yachting, Hotel & Tourism Association (BVIYHTA)
 
 **[Read the deck (PDF)](BVI-Tourism-2013-2026.pdf)**
 
-The PowerPoint version is available from BVIYHTA on request.
-
 ## In brief
 
 - Cruise passengers reached a record 875,000 in 2025, 25% above 2016.
-- Overnight guests, who account for about four-fifths of visitor value, are still 26% below 2016.
+- Overnight guests, who account for about four-fifths of visitor value, are c. 26% below 2016.
 - Visitor value is about $98M a year below the 2013–16 average.
 - Land-based rooms are now 30% above 2016; the charter fleet is still 63% below.
 - Air arrivals are up 18% since 2016; arrivals by sea, chiefly the St Thomas ferry routes, are down 36%.
