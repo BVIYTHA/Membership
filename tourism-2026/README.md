@@ -16,8 +16,8 @@ British Virgin Islands Yachting, Hotel & Tourism Association (BVIYHTA)
 
 - BVI Central Statistics Office, Tourism Summary series 2013–2026 (provisional figures)
 - Government of the Virgin Islands, 2024–2026 Macro-Economic Review and Outlook
-- Government of the Virgin Islands, National Tourism Plan 2026–2036 (consultation copy)
+- Government of the Virgin Islands, National Tourism Policy 2026–2036
 - FCCA/BREA, Caribbean Cruise Analysis 2024
 - US Bureau of Labor Statistics, CPI-U
 
-Value per visitor and the ×1.4 indirect and induced factor are explained in the deck (slide 14).
+Value per visitor and the ×1.4 indirect and induced factor are explained in the deck (slide 17).
